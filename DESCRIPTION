@@ -1,11 +1,12 @@
 Type: Package
-Package: ROGUE
-Title: ROGUE (Ratio of Global Unshifted Entropy)
+Package: fastROGUE
+Title: Parallel version of ROGUE (Ratio of Global Unshifted Entropy)
 Version: 1.0
-Author: Pauling Liu
-Maintainer: Pauling Liu <pauling.liu@pku.edu.cn>
+Authors@R: c(
+    person("Pauling", "Liu", role = c("aut", "cre")),
+    person("Zhiming", "Ye", role = "ctb")
 Description: An entropy-based universal metric for assessing the purity of
-    single cell population
+    single cell population with parallel calculation
 License: GPL (>=2)
 Imports: 
     dplyr,

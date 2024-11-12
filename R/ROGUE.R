@@ -87,8 +87,8 @@ entropy_fit <- function(.x, span = 0.5, mt.method = "fdr"){
 #' @export
 #'
 SE_fun <- function(expr, span = 0.5, r = 1, mt.method = "fdr", if.adj = T){
-  ent_res <- ROGUE::Entropy(expr, r = r)
-  ent_res <- ROGUE::entropy_fit(ent_res, span = span, mt.method = mt.method)
+  ent_res <- fastROGUE::Entropy(expr, r = r)
+  ent_res <- fastROGUE::entropy_fit(ent_res, span = span, mt.method = mt.method)
   if(!isTRUE(if.adj)){
     ent_res <- ent_res %>% dplyr::mutate(p.adj = p.value)
   }
@@ -407,8 +407,8 @@ rogue.boxplot <- function(res.rogue){
 #' @export
 #'
 DetermineK <- function(expr, span = 0.5, r = 1, mt.method = "fdr", if.adj = T){
-  ent_res <- ROGUE::Entropy(expr, r = r)
-  ent_res <- ROGUE::entropy_fit(ent_res, span = span, mt.method = mt.method)
+  ent_res <- fastROGUE::Entropy(expr, r = r)
+  ent_res <- fastROGUE::entropy_fit(ent_res, span = span, mt.method = mt.method)
   if(!isTRUE(if.adj)){
     ent_res <- ent_res %>% dplyr::mutate(p.adj = p.value)
   }
