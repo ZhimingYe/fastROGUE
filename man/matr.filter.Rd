@@ -19,9 +19,3 @@ A filtered gene expression matrix.
 \description{
 Filtering out low-abundance genes and low-quality cells
 }
-\examples{
-expr <- matrix(data = rbinom(n = 100, size = 20, prob = 0.5 ), nrow = 10)
-expr
-filtered.expr <- matr.filter(expr, min.cells = 3, min.genes = 3)
-filtered.expr
-}

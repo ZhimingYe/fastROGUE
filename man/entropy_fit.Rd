@@ -19,7 +19,3 @@ A tibble object with six columns.
 \description{
 Fit the relationship between expression entropy and mean gene expression using loess regression.
 }
-\examples{
-ent.res <- Entropy(expr)
-ent.res <- entropy_fit(ent.res, span = 0.3, mt.method = "fdr")
-}

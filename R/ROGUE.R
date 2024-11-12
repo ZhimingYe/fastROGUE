@@ -7,9 +7,12 @@
 #' @return A tibble object with three columns 'Gene', 'mean.expr' and 'entropy'.
 #' @export
 #'
-#' @examples
 Entropy <- function(expr, r = 1){
-  tmp <- log(expr+1)
+  if(!is(expr,"dgCMatrix")){
+    stop("Please provide Matrix object, not data.frame")
+  }
+  tmp <- expr
+  tmp@x<-log(tmp@x+1)
   entropy <- Matrix::rowMeans(tmp)
   mean.expr <- log(Matrix::rowMeans(expr)+r)
 
@@ -32,9 +35,6 @@ Entropy <- function(expr, r = 1){
 #' @param mt.method The multiple testing method used in p.adjust.
 #' @return A tibble object with six columns.
 #' @export
-#'
-#' @examples ent.res <- Entropy(expr)
-#' ent.res <- entropy_fit(ent.res, span = 0.3, mt.method = "fdr")
 entropy_fit <- function(.x, span = 0.5, mt.method = "fdr"){
   .x <- .x %>% dplyr::filter(is.finite(mean.expr)) %>% dplyr::filter(entropy > 0)
   fit <- loess(entropy~mean.expr, data = .x, span=span)
@@ -86,7 +86,6 @@ entropy_fit <- function(.x, span = 0.5, mt.method = "fdr"){
 #'
 #' @export
 #'
-#' @examples ent.res <- SE_fun(expr, span = 0.1, r = 1, mt.method = "fdr")
 SE_fun <- function(expr, span = 0.5, r = 1, mt.method = "fdr", if.adj = T){
   ent_res <- ROGUE::Entropy(expr, r = r)
   ent_res <- ROGUE::entropy_fit(ent_res, span = span, mt.method = mt.method)
@@ -107,9 +106,6 @@ SE_fun <- function(expr, span = 0.5, r = 1, mt.method = "fdr", if.adj = T){
 #'
 #' @return A ggplot object
 #' @export
-#'
-#' @examples ent.res <- SE_fun(expr, span = 0.1, r = 1, mt.method = "fdr")
-#' SEplot(ent.res)
 SEplot <- function(.x, point_size = 1, geom_line = T, p.adj = T, cutoff = 0.05){
   if(isFALSE(p.adj)){
     if(geom_line){
@@ -211,10 +207,6 @@ SEplot <- function(.x, point_size = 1, geom_line = T, p.adj = T, cutoff = 0.05){
 #' @return A filtered gene expression matrix.
 #' @export
 #'
-#' @examples expr <- matrix(data = rbinom(n = 100, size = 20, prob = 0.5 ), nrow = 10)
-#' expr
-#' filtered.expr <- matr.filter(expr, min.cells = 3, min.genes = 3)
-#' filtered.expr
 matr.filter <- function(expr, min.cells = 10, min.genes = 10){
   gene_count <- colSums(expr > 0, na.rm = T)
   cell_count <- rowSums(expr > 0, na.rm = T)
@@ -239,9 +231,6 @@ matr.filter <- function(expr, min.cells = 10, min.genes = 10){
 #' @return A value of ROGUE.
 #' @export
 #'
-#' @examples ent.res <- SE_fun(expr, span = 0.1, r = 1, mt.method = "fdr")
-#' CalculateRogue(ent.res, platform = "UMI")
-#' CalculateRogue(ent.res, k = 30)
 CalculateRogue <- function(.x, platform = NULL, cutoff = 0.05, k = NULL, features = NULL){
   if(is.null(k)){
     if(is.null(platform)){
@@ -283,7 +272,6 @@ CalculateRogue <- function(.x, platform = NULL, cutoff = 0.05, k = NULL, feature
 #' @return A tibble object with seven columns as 'ent' object.
 #' @export
 #'
-#' @examples ent.toli(ent.res, expr, n = 2, mt.method = "fdr")
 ent.toli <- function(ent, expr, n = 2, span = 0.5, r = 1, mt.method = "fdr"){
   sig.gene <- ent %>% dplyr::filter(p.adj < 0.05) %>% dplyr::pull(Gene)
   ng <- length(sig.gene)
@@ -312,6 +300,7 @@ ent.toli <- function(ent, expr, n = 2, span = 0.5, r = 1, mt.method = "fdr"){
 
 #' Calculate the ROGUE value of each putative cluster for each sample.
 #' @usage rogue(expr, labels, samples, platform = NULL, k= NULL, min.cell.n = 10, remove.outlier.n = 2, span = 0.5, r = 1, mt.method = c("fdr","BH"))
+#'
 #' @param expr The expression matrix. Rows should be genes and columns should be cells.
 #' @param labels A vector of cell cluster lables for all cells corresponding to 'expr' argument.
 #' @param samples A vector of samples (e.g. patients) to which each cell belongs, corresponding to 'expr' argument.
@@ -323,37 +312,43 @@ ent.toli <- function(ent, expr, n = 2, span = 0.5, r = 1, mt.method = "fdr"){
 #' @param min.cells if parameter filter is "TRUE", include genes detected in at least this many cells.
 #' @param min.genes if parameter filter is "TRUE", Include cells where at least this many genes are detected.
 #' @param mt.method The multiple testing method used in p.adjust.
+#' @param platform The platform ("UMI" or "full-length") used for generating the tested dataset.
+#' @param ncores Number of cores for parallel
+#' @param fix_to_numbers If low abundance of specific population in specific sample, keep `ERROR` information or fix them to zero? If `TRUE`, all `ERROR` will be fixed to zero.
 #'
 #' @return A dataframe where rows represent samples, cols represent clusters, and values represent corresponding ROGUEs.
 #' @export
 #'
-#' @examples
-rogue <- function(expr, labels, samples, platform = NULL, k = NULL, min.cell.n = 10, remove.outlier.n = 2, span = 0.5, r = 1, filter = F, min.cells = 10, min.genes = 10, mt.method = "fdr"){
+rogue <- function(expr, labels, samples, platform = NULL, k = NULL, min.cell.n = 10, remove.outlier.n = 2, span = 0.9, r = 1, filter = F, min.cells = 10, min.genes = 10, mt.method = "fdr",ncores=4,fix_to_numbers=T){
+  require(parallel)
   clusters <- unique(labels)
   meta <- tibble(CellID = 1:ncol(expr), ct = labels, sample = samples)
   sample.rogue <- function(meta, cluster){
     tmp <- meta %>% dplyr::filter(ct == cluster)
     s <- unique(samples)
-    rogue <- c()
-    for (i in 1:length(s)) {
+    rogue <- mclapply(1:length(s), function(i) {
       index1 <- tmp %>% dplyr::filter(sample == s[i]) %>% dplyr::pull(CellID)
-      if(length(index1) >= min.cell.n){
-        tmp.matr <- expr[,index1]
-        if(isTRUE(filter)){
+      if (length(index1) >= min.cell.n) {
+        tmp.matr <- expr[, index1]
+        if (isTRUE(filter)) {
           print("Filtering out low-abundance genes and low-quality cells")
           tmp.matr <- matr.filter(tmp.matr, min.cells = min.cells, min.genes = min.genes)
-        }else{
-          tmp.matr <- tmp.matr
         }
-        tmp.res <- SE_fun(tmp.matr, span = span, r = r)
-        tmp.res <- ent.toli(tmp.res, tmp.matr, span = span, r = r, n = remove.outlier.n)
-        rogue[i] <- CalculateRogue(tmp.res, platform = platform, k = k)
+
+        tryCatch({
+          tmp.res <- SE_fun(tmp.matr, span = span, r = r)
+          tmp.res <- ent.toli(tmp.res, tmp.matr, span = span, r = r, n = remove.outlier.n)
+          rogue_value <- CalculateRogue(tmp.res, platform = platform, k = k)
+          return(rogue_value)
+        }, error = function(e) {
+          return(0.0029)
+        })
+
+      } else {
+        return(0.0053)
       }
-      else{
-        rogue[i] <- NA
-      }
-    }
-    return(rogue)
+    },mc.cores = ncores)
+    return(unlist(rogue))
   }
 
   res <- list()
@@ -365,8 +360,15 @@ rogue <- function(expr, labels, samples, platform = NULL, k = NULL, min.cell.n =
   res.tibble <- Reduce(rbind, res) %>% as.matrix() %>% t() %>% as.data.frame()
   colnames(res.tibble) <- clusters
   rownames(res.tibble) <- unique(samples)
+  if(fix_to_numbers){
+    res.tibble[res.tibble<1e-2]<-0
+  }
+  else{
+    res.tibble[res.tibble<1e-2]<-"ERROR"
+  }
   return(res.tibble)
 }
+
 
 
 #' Visualize ROGUE values on a boxplot
@@ -376,8 +378,6 @@ rogue <- function(expr, labels, samples, platform = NULL, k = NULL, min.cell.n =
 #' @return A ggplot object.
 #' @export
 #'
-#' @examples res.rogue <- rogue(expr, labels, samples)
-#' rogue.boxplot(res.rogue)
 rogue.boxplot <- function(res.rogue){
   res.rogue %>%
     tidyr::gather(key = clusters, value = ROGUE) %>%
@@ -406,7 +406,6 @@ rogue.boxplot <- function(res.rogue){
 #'
 #' @export
 #'
-#' @examples k <- DetermineK(expr, span = 0.5, r = 1, mt.method = "fdr")
 DetermineK <- function(expr, span = 0.5, r = 1, mt.method = "fdr", if.adj = T){
   ent_res <- ROGUE::Entropy(expr, r = r)
   ent_res <- ROGUE::entropy_fit(ent_res, span = span, mt.method = mt.method)
@@ -417,3 +416,4 @@ DetermineK <- function(expr, span = 0.5, r = 1, mt.method = "fdr", if.adj = T){
   k <- k/2
   return(k)
 }
+# attachment::att_amend_desc()

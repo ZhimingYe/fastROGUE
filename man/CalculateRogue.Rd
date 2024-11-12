@@ -4,8 +4,7 @@
 \alias{CalculateRogue}
 \title{ROGUE calculation}
 \usage{
-CalculateRogue(.x, platform = NULL, cutoff = 0.05, k = NULL,
-  features = NULL)
+CalculateRogue(.x, platform = NULL, cutoff = 0.05, k = NULL, features = NULL)
 }
 \arguments{
 \item{.x}{A tibble object returned from the SE_fun or entropy_fit function.}
@@ -30,9 +29,4 @@ By taking advantage of the wide applicability of S-E model to scRNA-seq data, we
 \deqn{ROGUE=1-∑sig.ds/(∑sig.ds+K)}
 
 where K is an important parameter that constrains the ROGUE value between 0 and 1. A cell population with no significant ds for all genes will receive a ROGUE value of 1, while a population with maximum summarization of significant ds is supposed to yield a purity score of ~0.
-}
-\examples{
-ent.res <- SE_fun(expr, span = 0.1, r = 1, mt.method = "fdr")
-CalculateRogue(ent.res, platform = "UMI")
-CalculateRogue(ent.res, k = 30)
 }

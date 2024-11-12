@@ -23,7 +23,3 @@ A ggplot object
 \description{
 Draws a point plot of the relationship between S and E.
 }
-\examples{
-ent.res <- SE_fun(expr, span = 0.1, r = 1, mt.method = "fdr")
-SEplot(ent.res)
-}

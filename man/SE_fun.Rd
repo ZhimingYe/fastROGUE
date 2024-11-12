@@ -37,6 +37,3 @@ A tibble object with seven columns:
 \description{
 Use S-E curve to identify highly informative genes.
 }
-\examples{
-ent.res <- SE_fun(expr, span = 0.1, r = 1, mt.method = "fdr")
-}

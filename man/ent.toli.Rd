@@ -25,6 +25,3 @@ A tibble object with seven columns as 'ent' object.
 \description{
 Remove outlier cells when calculating ROGUE
 }
-\examples{
-ent.toli(ent.res, expr, n = 2, mt.method = "fdr")
-}

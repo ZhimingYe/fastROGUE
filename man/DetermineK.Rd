@@ -23,6 +23,3 @@ The K value
 \description{
 Determine the value of the reference factor K by specifying a highly heterogeneous dataset
 }
-\examples{
-k <- DetermineK(expr, span = 0.5, r = 1, mt.method = "fdr")
-}

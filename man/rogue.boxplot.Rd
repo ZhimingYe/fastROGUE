@@ -15,7 +15,3 @@ A ggplot object.
 \description{
 Draws a boxplot of the ROGUE values for each cluster in different samples.
 }
-\examples{
-res.rogue <- rogue(expr, labels, samples)
-rogue.boxplot(res.rogue)
-}

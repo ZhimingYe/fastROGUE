@@ -13,6 +13,8 @@ rogue(expr, labels, samples, platform = NULL, k= NULL, min.cell.n = 10, remove.o
 
 \item{samples}{A vector of samples (e.g. patients) to which each cell belongs, corresponding to 'expr' argument.}
 
+\item{platform}{The platform ("UMI" or "full-length") used for generating the tested dataset.}
+
 \item{min.cell.n}{Only clusters containing at least this many cells will receive ROGUE values.}
 
 \item{remove.outlier.n}{Remove this many outlier cells when calculating ROGUE.}
@@ -28,6 +30,10 @@ rogue(expr, labels, samples, platform = NULL, k= NULL, min.cell.n = 10, remove.o
 \item{min.genes}{if parameter filter is "TRUE", Include cells where at least this many genes are detected.}
 
 \item{mt.method}{The multiple testing method used in p.adjust.}
+
+\item{ncores}{Number of cores for parallel}
+
+\item{fix_to_numbers}{If low abundance of specific population in specific sample, keep `ERROR` information or fix them to zero? If `TRUE`, all `ERROR` will be fixed to zero.}
 }
 \value{
 A dataframe where rows represent samples, cols represent clusters, and values represent corresponding ROGUEs.
