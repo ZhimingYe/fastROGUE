@@ -299,7 +299,6 @@ ent.toli <- function(ent, expr, n = 2, span = 0.5, r = 1, mt.method = "fdr"){
 
 
 #' Calculate the ROGUE value of each putative cluster for each sample.
-#' @usage rogue(expr, labels, samples, platform = NULL, k= NULL, min.cell.n = 10, remove.outlier.n = 2, span = 0.5, r = 1, mt.method = c("fdr","BH"))
 #'
 #' @param expr The expression matrix. Rows should be genes and columns should be cells.
 #' @param labels A vector of cell cluster lables for all cells corresponding to 'expr' argument.

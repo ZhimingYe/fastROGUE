@@ -4,7 +4,23 @@
 \alias{rogue}
 \title{Calculate the ROGUE value of each putative cluster for each sample.}
 \usage{
-rogue(expr, labels, samples, platform = NULL, k= NULL, min.cell.n = 10, remove.outlier.n = 2, span = 0.5, r = 1, mt.method = c("fdr","BH"))
+rogue(
+  expr,
+  labels,
+  samples,
+  platform = NULL,
+  k = NULL,
+  min.cell.n = 10,
+  remove.outlier.n = 2,
+  span = 0.9,
+  r = 1,
+  filter = F,
+  min.cells = 10,
+  min.genes = 10,
+  mt.method = "fdr",
+  ncores = 4,
+  fix_to_numbers = T
+)
 }
 \arguments{
 \item{expr}{The expression matrix. Rows should be genes and columns should be cells.}
