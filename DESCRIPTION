@@ -3,7 +3,10 @@ Package: fastROGUE
 Title: Parallel version of ROGUE (Ratio of Global Unshifted Entropy)
 Version: 1.0
 Authors@R: c(
- .
+  person("Pauling", "Liu", role = c("aut", "cre"),
+         email = "pauling.liu@pku.edu.cn"),
+  person("Zhiming", "Ye", role = c("ctb"),
+         email = "garnetcrow@hotmail.com")
    )
 Description: An entropy-based universal metric for assessing the purity of
     single cell population with parallel calculation
